@@ -1,0 +1,158 @@
+# R script to extract first column from PDF and save to CSV
+# Install required packages if not already installed
+if (!require("pdftools")) install.packages("pdftools")
+if (!require("tabulizer")) install.packages("tabulizer")
+if (!require("dplyr")) install.packages("dplyr")
+
+library(pdftools)
+library(tabulizer)
+library(dplyr)
+
+# Method 1: Using pdftools (for simple text extraction)
+extract_first_column_pdftools <- function(pdf_path, output_csv) {
+  # Read PDF text
+  pdf_text <- pdf_text(pdf_path)
+  
+  # Initialize empty vector to store first column data
+  first_column_data <- c()
+  
+  # Process each page
+  for (page in pdf_text) {
+    # Split into lines
+    lines <- strsplit(page, "\n")[[1]]
+    
+    # Remove empty lines
+    lines <- lines[lines != ""]
+    
+    # Extract first column (assuming space or tab separated)
+    for (line in lines) {
+      # Skip header lines or lines that don't contain data
+      if (grepl("^[[:space:]]*$", line)) next
+      
+      # Split by whitespace and take first element
+      first_element <- trimws(strsplit(line, "\\s+")[[1]][1])
+      
+      # Add to data if not empty
+      if (!is.na(first_element) && first_element != "") {
+        first_column_data <- c(first_column_data, first_element)
+      }
+    }
+  }
+  
+  # Create data frame and save to CSV
+  df <- data.frame(first_column = first_column_data)
+  write.csv(df, output_csv, row.names = FALSE)
+  
+  return(df)
+}
+
+# Method 2: Using tabulizer (for proper table extraction)
+extract_first_column_tabulizer <- function(pdf_path, output_csv) {
+  # Extract tables from PDF
+  tables <- extract_tables(pdf_path)
+  
+  # Initialize empty vector to store first column data
+  first_column_data <- c()
+  
+  # Process each table
+  for (table in tables) {
+    if (length(table) > 0 && ncol(table) > 0) {
+      # Get first column (skip header if present)
+      first_col <- table[, 1]
+      
+      # Remove empty values and clean data
+      first_col <- first_col[first_col != "" & !is.na(first_col)]
+      
+      # Add to combined data
+      first_column_data <- c(first_column_data, first_col)
+    }
+  }
+  
+  # Create data frame and save to CSV
+  df <- data.frame(first_column = first_column_data)
+  write.csv(df, output_csv, row.names = FALSE)
+  
+  return(df)
+}
+
+# Main execution
+pdf_file <- "islenskir-fuglar-2009.pdf"
+output_file <- "first_column_extracted.csv"
+
+# Try Method 1 first (pdftools)
+cat("Trying pdftools method...\n")
+tryCatch({
+  result1 <- extract_first_column_pdftools(pdf_file, "first_column_pdftools.csv")
+  cat("Successfully extracted", nrow(result1), "entries using pdftools\n")
+  cat("Preview of first few entries:\n")
+  print(head(result1, 10))
+}, error = function(e) {
+  cat("pdftools method failed:", e$message, "\n")
+})
+
+# Try Method 2 (tabulizer)
+cat("\nTrying tabulizer method...\n")
+tryCatch({
+  result2 <- extract_first_column_tabulizer(pdf_file, "first_column_tabulizer.csv")
+  cat("Successfully extracted", nrow(result2), "entries using tabulizer\n")
+  cat("Preview of first few entries:\n")
+  print(head(result2, 10))
+}, error = function(e) {
+  cat("tabulizer method failed:", e$message, "\n")
+})
+
+# Alternative Method 3: Manual approach with more control
+extract_first_column_manual <- function(pdf_path, output_csv) {
+  # Read PDF text
+  pdf_text <- pdf_text(pdf_path)
+  
+  # Combine all pages
+  all_text <- paste(pdf_text, collapse = "\n")
+  
+  # Split into lines
+  lines <- strsplit(all_text, "\n")[[1]]
+  
+  # Clean lines and extract first column
+  first_column_data <- c()
+  
+  for (line in lines) {
+    # Skip empty lines
+    if (grepl("^[[:space:]]*$", line)) next
+    
+    # Clean line
+    clean_line <- trimws(line)
+    
+    # Split by multiple spaces or tabs
+    parts <- strsplit(clean_line, "\\s{2,}|\\t")[[1]]
+    
+    # Take first part if it exists
+    if (length(parts) > 0 && parts[1] != "") {
+      first_column_data <- c(first_column_data, parts[1])
+    }
+  }
+  
+  # Remove duplicates if needed
+  # first_column_data <- unique(first_column_data)
+  
+  # Create data frame and save to CSV
+  df <- data.frame(first_column = first_column_data)
+  write.csv(df, output_csv, row.names = FALSE)
+  
+  return(df)
+}
+
+# Try Method 3 (manual approach)
+cat("\nTrying manual method...\n")
+tryCatch({
+  result3 <- extract_first_column_manual(pdf_file, "first_column_manual.csv")
+  cat("Successfully extracted", nrow(result3), "entries using manual method\n")
+  cat("Preview of first few entries:\n")
+  print(head(result3, 10))
+}, error = function(e) {
+  cat("Manual method failed:", e$message, "\n")
+})
+
+cat("\nExtraction complete! Check the generated CSV files:\n")
+cat("- first_column_pdftools.csv\n")
+cat("- first_column_tabulizer.csv\n")
+cat("- first_column_manual.csv\n") 

@@ -1,0 +1,294 @@
+# R script to extract table from PDF and filter for rare species (F in 4th column)
+# Install required packages if not already installed
+if (!require("pdftools")) install.packages("pdftools")
+if (!require("tabulizer")) install.packages("tabulizer")
+if (!require("dplyr")) install.packages("dplyr")
+
+library(pdftools)
+library(tabulizer)
+library(dplyr)
+
+# Method 1: Using tabulizer to extract full table and filter for rare species
+extract_rare_species_tabulizer <- function(pdf_path, output_csv) {
+  cat("Extracting tables from PDF...\n")
+  
+  # Extract all tables from PDF
+  tables <- extract_tables(pdf_path)
+  
+  # Initialize list to store all table data
+  all_data <- list()
+  
+  # Process each table
+  for (i in seq_along(tables)) {
+    table <- tables[[i]]
+    
+    if (length(table) > 0 && ncol(table) >= 4) {
+      cat("Processing table", i, "with", nrow(table), "rows and", ncol(table), "columns\n")
+      
+      # Convert to data frame
+      df <- as.data.frame(table, stringsAsFactors = FALSE)
+      
+      # Add table number for reference
+      df$table_source <- i
+      
+      all_data[[i]] <- df
+    }
+  }
+  
+  # Combine all tables
+  if (length(all_data) > 0) {
+    combined_df <- do.call(rbind, all_data)
+    
+    # Check if 4th column exists
+    if (ncol(combined_df) >= 4) {
+      cat("Total rows extracted:", nrow(combined_df), "\n")
+      cat("Columns available:", ncol(combined_df), "\n")
+      
+      # Show first few rows to understand structure
+      cat("First few rows of extracted data:\n")
+      print(head(combined_df, 5))
+      
+      # Filter for rows where 4th column contains "F"
+      rare_species <- combined_df[grepl("F", combined_df[, 4]), ]
+      
+      cat("Found", nrow(rare_species), "rare species (4th column contains 'F')\n")
+      
+      if (nrow(rare_species) > 0) {
+        # Save rare species to CSV
+        write.csv(rare_species, output_csv, row.names = FALSE)
+        cat("Rare species saved to:", output_csv, "\n")
+        
+        # Show preview of rare species
+        cat("Preview of rare species:\n")
+        print(head(rare_species, 10))
+        
+        return(rare_species)
+      } else {
+        cat("No rare species found with 'F' in 4th column\n")
+        return(NULL)
+      }
+    } else {
+      cat("Error: Table doesn't have 4 columns\n")
+      return(NULL)
+    }
+  } else {
+    cat("No tables found in PDF\n")
+    return(NULL)
+  }
+}
+
+# Method 2: Manual extraction with more control
+extract_rare_species_manual <- function(pdf_path, output_csv) {
+  cat("Extracting text manually from PDF...\n")
+  
+  # Read PDF text
+  pdf_text <- pdf_text(pdf_path)
+  
+  # Combine all pages
+  all_text <- paste(pdf_text, collapse = "\n")
+  
+  # Split into lines
+  lines <- strsplit(all_text, "\n")[[1]]
+  
+  # Initialize list to store table rows
+  table_rows <- list()
+  
+  # Process each line
+  for (line in lines) {
+    # Skip empty lines
+    if (grepl("^[[:space:]]*$", line)) next
+    
+    # Clean line
+    clean_line <- trimws(line)
+    
+    # Split by multiple spaces or tabs (more flexible)
+    parts <- strsplit(clean_line, "\\s{2,}|\\t")[[1]]
+    
+    # Only keep lines with at least 4 parts (columns)
+    if (length(parts) >= 4) {
+      table_rows[[length(table_rows) + 1]] <- parts
+    }
+  }
+  
+  if (length(table_rows) > 0) {
+    # Convert to data frame
+    max_cols <- max(sapply(table_rows, length))
+    
+    # Pad shorter rows with NA
+    padded_rows <- lapply(table_rows, function(row) {
+      if (length(row) < max_cols) {
+        c(row, rep(NA, max_cols - length(row)))
+      } else {
+        row
+      }
+    })
+    
+    df <- as.data.frame(do.call(rbind, padded_rows), stringsAsFactors = FALSE)
+    
+    cat("Extracted", nrow(df), "rows with", ncol(df), "columns\n")
+    
+    # Show first few rows
+    cat("First few rows:\n")
+    print(head(df, 5))
+    
+    # Filter for rows where 4th column contains "F"
+    if (ncol(df) >= 4) {
+      rare_species <- df[grepl("F", df[, 4]), ]
+      
+      cat("Found", nrow(rare_species), "rare species (4th column contains 'F')\n")
+      
+      if (nrow(rare_species) > 0) {
+        # Save rare species to CSV
+        write.csv(rare_species, output_csv, row.names = FALSE)
+        cat("Rare species saved to:", output_csv, "\n")
+        
+        # Show preview
+        cat("Preview of rare species:\n")
+        print(head(rare_species, 10))
+        
+        return(rare_species)
+      } else {
+        cat("No rare species found with 'F' in 4th column\n")
+        return(NULL)
+      }
+    } else {
+      cat("Error: Not enough columns in extracted data\n")
+      return(NULL)
+    }
+  } else {
+    cat("No table data found\n")
+    return(NULL)
+  }
+}
+
+# Method 3: Advanced extraction with pattern matching
+extract_rare_species_advanced <- function(pdf_path, output_csv) {
+  cat("Using advanced extraction method...\n")
+  
+  # Read PDF text
+  pdf_text <- pdf_text(pdf_path)
+  
+  # Initialize storage
+  all_rows <- list()
+  
+  # Process each page
+  for (page_num in seq_along(pdf_text)) {
+    page <- pdf_text[page_num]
+    
+    # Split page into lines
+    lines <- strsplit(page, "\n")[[1]]
+    
+    for (line in lines) {
+      # Skip empty lines
+      if (grepl("^[[:space:]]*$", line)) next
+      
+      # Try different splitting strategies
+      # Strategy 1: Split by 2+ spaces
+      parts1 <- strsplit(line, "\\s{2,}")[[1]]
+      
+      # Strategy 2: Split by tabs
+      parts2 <- strsplit(line, "\\t")[[1]]
+      
+      # Strategy 3: Split by single spaces but keep consecutive non-space parts
+      parts3 <- strsplit(line, "\\s+")[[1]]
+      
+      # Choose the best split (most parts with reasonable length)
+      candidates <- list(parts1, parts2, parts3)
+      best_split <- NULL
+      best_score <- 0
+      
+      for (candidate in candidates) {
+        if (length(candidate) >= 4) {
+          # Score based on number of parts and their quality
+          score <- length(candidate) + sum(nchar(candidate) > 0)
+          if (score > best_score) {
+            best_score <- score
+            best_split <- candidate
+          }
+        }
+      }
+      
+      if (!is.null(best_split)) {
+        all_rows[[length(all_rows) + 1]] <- best_split
+      }
+    }
+  }
+  
+  if (length(all_rows) > 0) {
+    # Convert to data frame
+    max_cols <- max(sapply(all_rows, length))
+    
+    # Pad shorter rows
+    padded_rows <- lapply(all_rows, function(row) {
+      if (length(row) < max_cols) {
+        c(row, rep(NA, max_cols - length(row)))
+      } else {
+        row
+      }
+    })
+    
+    df <- as.data.frame(do.call(rbind, padded_rows), stringsAsFactors = FALSE)
+    
+    cat("Advanced extraction found", nrow(df), "rows with", ncol(df), "columns\n")
+    
+    # Show sample
+    cat("Sample of extracted data:\n")
+    print(head(df, 5))
+    
+    # Filter for rare species (F in 4th column)
+    if (ncol(df) >= 4) {
+      rare_species <- df[grepl("F", df[, 4]), ]
+      
+      cat("Found", nrow(rare_species), "rare species\n")
+      
+      if (nrow(rare_species) > 0) {
+        write.csv(rare_species, output_csv, row.names = FALSE)
+        cat("Rare species saved to:", output_csv, "\n")
+        print(head(rare_species, 10))
+        return(rare_species)
+      } else {
+        cat("No rare species found\n")
+        return(NULL)
+      }
+    } else {
+      cat("Not enough columns for filtering\n")
+      return(NULL)
+    }
+  } else {
+    cat("No data extracted\n")
+    return(NULL)
+  }
+}
+
+# Main execution
+pdf_file <- "islenskir-fuglar-2009.pdf"
+
+# Try Method 1 (tabulizer)
+cat("=== METHOD 1: TABULIZER ===\n")
+tryCatch({
+  result1 <- extract_rare_species_tabulizer(pdf_file, "rare_species_tabulizer_fixed.csv")
+}, error = function(e) {
+  cat("Tabulizer method failed:", e$message, "\n")
+})
+
+# Try Method 2 (manual)
+cat("\n=== METHOD 2: MANUAL ===\n")
+tryCatch({
+  result2 <- extract_rare_species_manual(pdf_file, "rare_species_manual_fixed.csv")
+}, error = function(e) {
+  cat("Manual method failed:", e$message, "\n")
+})
+
+# Try Method 3 (advanced)
+cat("\n=== METHOD 3: ADVANCED ===\n")
+tryCatch({
+  result3 <- extract_rare_species_advanced(pdf_file, "rare_species_advanced_fixed.csv")
+}, error = function(e) {
+  cat("Advanced method failed:", e$message, "\n")
+})
+
+cat("\n=== EXTRACTION COMPLETE ===\n")
+cat("Check the generated CSV files for rare species:\n")
+cat("- rare_species_tabulizer_fixed.csv\n")
+cat("- rare_species_manual_fixed.csv\n")
+cat("- rare_species_advanced_fixed.csv\n") 

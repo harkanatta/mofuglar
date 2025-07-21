@@ -1,0 +1,39 @@
+# Debug script to examine raw text structure
+if (!require("pdftools")) install.packages("pdftools")
+library(pdftools)
+
+pdf_text <- pdf_text("islenskir-fuglar-2009.pdf")
+
+# Look at first page raw text
+cat("=== FIRST PAGE RAW TEXT ===\n")
+cat(pdf_text[1])
+cat("\n=== END RAW TEXT ===\n")
+
+# Look at individual lines
+lines <- strsplit(pdf_text[1], "\n")[[1]]
+lines <- lines[lines != ""]
+
+cat("\n=== INDIVIDUAL LINES ===\n")
+for (i in 1:min(10, length(lines))) {
+  cat("Line", i, ":", repr(lines[i]), "\n")
+}
+
+# Try different splitting approaches
+cat("\n=== DIFFERENT SPLITTING APPROACHES ===\n")
+test_line <- "Hnúðsvanur               Cygnus olor                   Mute Swan C,A              F                         9"
+cat("Test line:", repr(test_line), "\n")
+
+# Method 1: Split by 2+ spaces
+parts1 <- strsplit(test_line, "\\s{2,}")[[1]]
+cat("Split by 2+ spaces:", length(parts1), "parts:", paste(parts1, collapse=" | "), "\n")
+
+# Method 2: Split by tabs
+parts2 <- strsplit(test_line, "\\t")[[1]]
+cat("Split by tabs:", length(parts2), "parts:", paste(parts2, collapse=" | "), "\n")
+
+# Method 3: Split by single space
+parts3 <- strsplit(test_line, "\\s+")[[1]]
+cat("Split by single space:", length(parts3), "parts:", paste(parts3, collapse=" | "), "\n")
+
+# Method 4: Custom approach - find the pattern
+cat("\n=== EXAMINING SPACING PATTERNS ===\n") 
