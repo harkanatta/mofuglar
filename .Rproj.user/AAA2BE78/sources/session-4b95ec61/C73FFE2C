@@ -3,7 +3,7 @@
     "path": "~/vinna/nnv/mofuglar/fuglainnslattur/app.R",
     "project_path": "fuglainnslattur/app.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "1664906692",
     "contents": "",
     "dirty": false,
     "created": 1752846176715.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "108,43",
-        "scrollLine": "91"
+        "cursorPosition": "57,2",
+        "scrollLine": "63"
     },
     "folds": "",
-    "lastKnownWriteTime": 1752846199,
+    "lastKnownWriteTime": 1753101908,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1752846199706,
+    "last_content_update": 1753101908,
     "read_only": false,
     "read_only_alternatives": []
 }
