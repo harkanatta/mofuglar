@@ -180,9 +180,18 @@ server <- function(input, output, session) {
     n <- length(species)
     
     if (!(length(total) == n && length(distance) == n && length(activity) == n)) {
+      # Create detailed error message
+      error_details <- paste0(
+        "Tegundir: ", n, " gildi<br/>",
+        "Fjöldi: ", length(total), " gildi<br/>",
+        "Fjarlægð: ", length(distance), " gildi<br/>",
+        "Atferli: ", length(activity), " gildi<br/><br/>",
+        "Öll svæði þurfa að hafa sama fjölda gilda aðskilin með kommu."
+      )
+      
       showModal(modalDialog(
-        title = "Input Length Mismatch",
-        "All input fields must have the same number of comma-separated values.",
+        title = "Misræmi í fjölda gilda",
+        HTML(error_details),
         easyClose = TRUE
       ))
     } else {
@@ -199,7 +208,7 @@ server <- function(input, output, session) {
         Activity = activity,
         stringsAsFactors = FALSE
       )
-      values$data <- rbind(values$data, new_entries)
+      values$data <- rbind(new_entries, values$data)
     }
   })
   

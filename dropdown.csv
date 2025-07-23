@@ -36,30 +36,30 @@ Not breeding,"Ólíklegur varpfugl, t.d. hópur heiðlóa"
 Acticvity,
 ,
 varplegur,Almennt yfir varplegt atferli - Breeding
-söngflug,"Á við margar tegundir, t.d. lóu, lóuþræl, jaðrakan - Breeding"
+sf,söngflug,"Á við margar tegundir, t.d. lóu, lóuþræl, jaðrakan - Breeding"
 bí,Á við heiðlóu – alltaf breeding
 hnegg,Á við hrossagauk – alltaf breeding
 kall,"Almennt, getur átt við margar tegundir. Ef mófugl, þá er breeding valið"
 flaut,Á við spóa – alltaf breeding
 vell,Á við spóa – alltaf breeding
 rop,Á við rjúpu – alltaf breeding
-syngur,Syngja – oft skrifað sy á blöðum - breeding
-eltingaleikur,"2-3 fljúga á eftir hverjum öðrum (t.d. jaðrakan, lóuþræll, óðinshani) - Alltaf breeding"
+s,syngur,Syngja – oft skrifað sy á blöðum - breeding
+eltast, eltingaleikur,"2-3 fljúga á eftir hverjum öðrum (t.d. jaðrakan, lóuþræll, óðinshani) - Alltaf breeding"
 æf,"Æstur fugl – barm, mobb o.s.frv. Alltaf breeding"
 æp,"Æst par – barm, mobb o.s.frv. Alltaf breeding"
 laumulegur,"Fugl ber þess merki að vera með hreiður í grenndinni, t.d. spói. Alltaf breeding"
 fugl á hreiðri,Fugl á hreiðri eða virðist fljúga af hreiðri - breeding
 fugl með unga,Breeding
-par með unga,Breeding
+pungar, par með unga,Breeding
 par við hreiður,Breeding
 óðal,"T.d. skúmur eða kjói á óðali – skrá sem breeding sýni fuglarnir greinileg merki um það (eru æstir/gera árás etc), annars sem N/A"
 óðal í eyði,Not breeding
-par,"Par í varpkjörlendi, til dæmis andapar - breeding"
+p, par,"Par í varpkjörlendi, til dæmis andapar - breeding"
 með æti,"Fugl að bera æti í unga, spörfuglar, tjaldur o.fl. Breeding"
 hreiður,Fundið hreiður - breeding (hægt að skrá ítarlegri upplýsingar varðandi hreiðurfundi í Nest data)
 varp,"Á við fugla sem verpa þétt saman í kóloníum, t.d. kría"
 ekki varplegur,"Almennt - fugl/ar ekki varplegir, sitja þögulir, hópur fugla o.s.frv. Not breeding"
-á flugi,Fugl flaug yfir án þess að sýna varpatferli – N/A
+fl, á flugi,Fugl flaug yfir án þess að sýna varpatferli – N/A
 í ætisleit,Fugl að éta eða í ætisleit – N/A
 á sundi,"Fugl á sundi, getur verið varplegur í einhverjum tilfellum"
 flýgur upp,"Fugl flýgur upp eða er fældur upp – getur verið varplegur, t.d. önd upp úr skurði"
